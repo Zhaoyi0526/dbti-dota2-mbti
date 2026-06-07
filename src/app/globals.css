@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dbti-bg: #121214;
+  --dbti-aegis: #c9a227;
+  --dbti-blink: #7c3aed;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--dbti-bg);
+  color: #f4f4f5;
+  min-height: 100dvh;
+}
+
+@layer utilities {
+  .text-glow-purple {
+    text-shadow: 0 0 12px rgba(124, 58, 237, 0.6);
+  }
+  .text-glow-aegis {
+    text-shadow: 0 0 14px rgba(201, 162, 39, 0.45);
+  }
+}
