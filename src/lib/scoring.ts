@@ -1,79 +1,126 @@
+import { questions } from "@/data/questions";
+import { resolvePersona } from "@/data/personas";
 import type {
-  AxisLetter,
-  AxisTotals,
   DBTIProgress,
-  PersonaCode,
+  DimensionKey,
+  DimensionScoreMap,
+  DimensionTotals,
   Question,
   QuizResult,
-  ScoreMap,
+  RadarPoint,
 } from "@/types/dbti";
-import { resolvePersona } from "@/data/personas";
 
-const INITIAL_PROGRESS: DBTIProgress = {
-  M_vs_B: 0,
-  C_vs_A: 0,
-  S_vs_F: 0,
-  W_vs_L: 0,
-};
+export type ScoreMap = DimensionTotals;
 
-const INITIAL_TOTALS: AxisTotals = {
-  M: 0,
-  B: 0,
-  C: 0,
-  A: 0,
-  S: 0,
-  F: 0,
-  W: 0,
-  L: 0,
-};
-
-function applyScore(progress: DBTIProgress, letter: AxisLetter, points: number) {
-  switch (letter) {
-    case "M":
-      progress.M_vs_B -= points;
-      break;
-    case "B":
-      progress.M_vs_B += points;
-      break;
-    case "C":
-      progress.C_vs_A -= points;
-      break;
-    case "A":
-      progress.C_vs_A += points;
-      break;
-    case "S":
-      progress.S_vs_F -= points;
-      break;
-    case "F":
-      progress.S_vs_F += points;
-      break;
-    case "W":
-      progress.W_vs_L -= points;
-      break;
-    case "L":
-      progress.W_vs_L += points;
-      break;
-  }
+export function createEmptyTotals(): DimensionTotals {
+  return {
+    Mute: 0,
+    Bark: 0,
+    "C-Dog": 0,
+    Altruist: 0,
+    Smart: 0,
+    Fierce: 0,
+    Win: 0,
+    "Lay-flat": 0,
+  };
 }
 
-export function createEmptyProgress(): DBTIProgress {
-  return { ...INITIAL_PROGRESS };
-}
+function aggregateAnswers(
+  questionBank: Question[],
+  answers: Record<number, number>
+): DimensionTotals {
+  const totals = createEmptyTotals();
 
-export function createEmptyTotals(): AxisTotals {
-  return { ...INITIAL_TOTALS };
-}
+  Object.entries(answers).forEach(([qIdStr, selectedOptionIndex]) => {
+    const qId = Number(qIdStr);
+    const question = questionBank.find((q) => q.id === qId);
+    if (!question) return;
 
-export function applyScores(
-  progress: DBTIProgress,
-  totals: AxisTotals,
-  scores: ScoreMap
-) {
-  (Object.entries(scores) as [AxisLetter, number][]).forEach(([letter, points]) => {
-    if (!points) return;
-    applyScore(progress, letter, points);
-    totals[letter] += points;
+    const selectedOption = question.options[selectedOptionIndex];
+    if (!selectedOption?.scores) return;
+
+    (Object.entries(selectedOption.scores) as [DimensionKey, number][]).forEach(
+      ([dimension, scoreValue]) => {
+        if (scoreValue) totals[dimension] += scoreValue;
+      }
+    );
   });
+
+  return totals;
+}
+
+function deriveProgress(totals: DimensionTotals): DBTIProgress {
+  return {
+    M_vs_B: totals.Bark - totals.Mute,
+    C_vs_A: totals.Altruist - totals["C-Dog"],
+    S_vs_F: totals.Fierce - totals.Smart,
+    W_vs_L: totals["Lay-flat"] - totals.Win,
+  };
+}
+
+function derivePersonaCode(totals: DimensionTotals): string {
+  const letter1 = totals.Mute >= totals.Bark ? "M" : "B";
+  const letter2 = totals["C-Dog"] >= totals.Altruist ? "C" : "A";
+  const letter3 = totals.Smart >= totals.Fierce ? "S" : "F";
+  const letter4 = totals.Win >= totals["Lay-flat"] ? "W" : "L";
+
+  let finalCode = `${letter1}${letter2}${letter3}${letter4}`;
+
+  if (finalCode === "MASL" && totals.Smart < totals.Fierce) {
+    finalCode = "MAFL";
+  }
+
+  return finalCode;
+}
+
+export function buildRadarData(totals: DimensionTotals): RadarPoint[] {
+  return [
+    { name: "Mute", value: totals.Mute },
+    { name: "Bark", value: totals.Bark },
+    { name: "C-Dog", value: totals["C-Dog"] },
+    { name: "Altruist", value: totals.Altruist },
+    { name: "Smart", value: totals.Smart },
+    { name: "Fierce", value: totals.Fierce },
+    { name: "Win", value: totals.Win },
+    { name: "Lay-flat", value: totals["Lay-flat"] },
+  ];
+}
+
+export function calculateDbtiResult(
+  answers: Record<number, number>,
+  questionBank: Question[] = questions
+): {
+  code: string;
+  radarData: RadarPoint[];
+  totals: DimensionTotals;
+  progress: DBTIProgress;
+} {
+  const totals = aggregateAnswers(questionBank, answers);
+  const progress = deriveProgress(totals);
+  const code = derivePersonaCode(totals);
+  const radarData = buildRadarData(totals);
+
+  return { code, radarData, totals, progress };
+}
+
+export function scoreAllAnswers(
+  questionBank: Question[],
+  answers: Record<number, number>
+): QuizResult {
+  const { code, radarData, totals, progress } = calculateDbtiResult(
+    answers,
+    questionBank
+  );
+  const resolved = resolvePersona(code, progress, totals);
+
+  return {
+    code,
+    personaKey: resolved.key,
+    progress,
+    totals,
+    radarData,
+    persona: resolved.profile,
+  };
 }
 
 export function deriveCode(progress: DBTIProgress): string {
@@ -84,51 +131,13 @@ export function deriveCode(progress: DBTIProgress): string {
   return `${m}${c}${s}${w}`;
 }
 
-export function calculateResult(
-  progress: DBTIProgress,
-  totals: AxisTotals
-): QuizResult {
-  const rawCode = deriveCode(progress);
-  const resolved = resolvePersona(rawCode, progress, totals);
-  return {
-    code: rawCode,
-    personaKey: resolved.key,
-    progress,
-    totals,
-    persona: resolved.profile,
-  };
-}
-
-export function scoreAllAnswers(
-  questions: Question[],
-  answers: Record<number, number>
-): QuizResult {
-  const progress = createEmptyProgress();
-  const totals = createEmptyTotals();
-
-  questions.forEach((q) => {
-    const optionIndex = answers[q.id];
-    if (optionIndex === undefined) return;
-    const option = q.options[optionIndex];
-    if (option) applyScores(progress, totals, option.scores);
-  });
-
-  return calculateResult(progress, totals);
-}
-
-export function getRadarData(totals: AxisTotals) {
-  return [
-    { axis: "Mute 独狼", value: totals.M, fullMark: 40 },
-    { axis: "Bark 互动", value: totals.B, fullMark: 40 },
-    { axis: "C-Dog 吸血", value: totals.C, fullMark: 40 },
-    { axis: "Altruist 利他", value: totals.A, fullMark: 40 },
-    { axis: "Smart 公式", value: totals.S, fullMark: 40 },
-    { axis: "Fierce 直觉", value: totals.F, fullMark: 40 },
-    { axis: "Win 分奴", value: totals.W, fullMark: 40 },
-    { axis: "Lay-flat 摆烂", value: totals.L, fullMark: 40 },
-  ];
-}
-
-export function formatAxisSummary(progress: DBTIProgress): string {
-  return deriveCode(progress) as PersonaCode;
+export function applyScores(
+  totals: DimensionTotals,
+  scores: DimensionScoreMap
+) {
+  (Object.entries(scores) as [DimensionKey, number][]).forEach(
+    ([dimension, points]) => {
+      if (points) totals[dimension] += points;
+    }
+  );
 }

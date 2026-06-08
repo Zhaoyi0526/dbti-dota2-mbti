@@ -8,44 +8,49 @@ import {
   RadarChart as RechartsRadar,
   ResponsiveContainer,
 } from "recharts";
-import type { AxisTotals } from "@/types/dbti";
+import type { DimensionTotals, RadarPoint } from "@/types/dbti";
 
 interface DBTIRadarChartProps {
-  totals: AxisTotals;
+  totals: DimensionTotals;
+  radarData?: RadarPoint[];
 }
 
-export function DBTIRadarChart({ totals }: DBTIRadarChartProps) {
+export function DBTIRadarChart({ totals, radarData }: DBTIRadarChartProps) {
   const max = Math.max(
     8,
-    totals.M,
-    totals.B,
-    totals.C,
-    totals.A,
-    totals.S,
-    totals.F,
-    totals.W,
-    totals.L
+    totals.Mute,
+    totals.Bark,
+    totals["C-Dog"],
+    totals.Altruist,
+    totals.Smart,
+    totals.Fierce,
+    totals.Win,
+    totals["Lay-flat"]
   );
 
-  const data = [
-    { subject: "Mute", value: totals.M, fullMark: max },
-    { subject: "Bark", value: totals.B, fullMark: max },
-    { subject: "C-Dog", value: totals.C, fullMark: max },
-    { subject: "Altruist", value: totals.A, fullMark: max },
-    { subject: "Smart", value: totals.S, fullMark: max },
-    { subject: "Fierce", value: totals.F, fullMark: max },
-    { subject: "Win", value: totals.W, fullMark: max },
-    { subject: "Lay-flat", value: totals.L, fullMark: max },
-  ];
+  const data = (radarData ?? [
+    { name: "Mute", value: totals.Mute },
+    { name: "Bark", value: totals.Bark },
+    { name: "C-Dog", value: totals["C-Dog"] },
+    { name: "Altruist", value: totals.Altruist },
+    { name: "Smart", value: totals.Smart },
+    { name: "Fierce", value: totals.Fierce },
+    { name: "Win", value: totals.Win },
+    { name: "Lay-flat", value: totals["Lay-flat"] },
+  ]).map((point) => ({
+    subject: point.name,
+    value: point.value,
+    fullMark: max,
+  }));
 
   return (
-    <div className="h-64 w-full sm:h-72">
+    <div className="h-56 w-full sm:h-64">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadar data={data} cx="50%" cy="50%" outerRadius="72%">
-          <PolarGrid stroke="#3f3f46" strokeOpacity={0.6} />
+          <PolarGrid stroke="#ffffff" strokeOpacity={0.08} />
           <PolarAngleAxis
             dataKey="subject"
-            tick={{ fill: "#a1a1aa", fontSize: 10 }}
+            tick={{ fill: "#a1a1aa", fontSize: 11 }}
           />
           <PolarRadiusAxis
             angle={30}
