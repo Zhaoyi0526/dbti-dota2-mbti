@@ -26,3 +26,33 @@ body {
     text-shadow: 0 0 14px rgba(201, 162, 39, 0.45);
   }
 }
+
+@keyframes dbti-dust-float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-14px) translateX(6px);
+    opacity: 0.55;
+  }
+}
+
+@keyframes dbti-ghost-drift {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+.dbti-particle {
+  animation: dbti-dust-float 6s ease-in-out infinite;
+}
+
+.landing-ghost {
+  animation: dbti-ghost-drift 14s ease-in-out infinite;
+}
