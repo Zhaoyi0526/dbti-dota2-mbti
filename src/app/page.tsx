@@ -26,10 +26,10 @@ export default function HomePage() {
         </p>
 
         <div className="mb-12 flex flex-wrap justify-center gap-3 font-mono text-xs text-zinc-600">
-          <span className="rounded border border-zinc-800 px-2 py-1">Mute ↔ Bark</span>
-          <span className="rounded border border-zinc-800 px-2 py-1">C-Dog ↔ Altruist</span>
-          <span className="rounded border border-zinc-800 px-2 py-1">Smart ↔ Fierce</span>
-          <span className="rounded border border-zinc-800 px-2 py-1">Win ↔ Lay-flat</span>
+          <span className="rounded border border-zinc-800 px-2 py-1">Silent ↔ Vocal</span>
+          <span className="rounded border border-zinc-800 px-2 py-1">Egoistic ↔ Altruistic</span>
+          <span className="rounded border border-zinc-800 px-2 py-1">Calculated ↔ Instinctive</span>
+          <span className="rounded border border-zinc-800 px-2 py-1">Tenacious ↔ Resigned</span>
         </div>
 
         <Link

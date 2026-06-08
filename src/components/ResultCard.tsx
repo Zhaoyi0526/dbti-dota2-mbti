@@ -96,10 +96,10 @@ export function ResultCard({ result, forExport = false }: ResultCardProps) {
         <div className={`${glassPanelClass} !py-4`}>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "社交", left: "Mute", right: "Bark", val: progress.M_vs_B },
-              { label: "资源", left: "C-Dog", right: "Altruist", val: progress.C_vs_A },
-              { label: "决策", left: "Smart", right: "Fierce", val: progress.S_vs_F },
-              { label: "韧性", left: "Win", right: "Lay-flat", val: progress.W_vs_L },
+              { label: "社交", left: "Silent", right: "Vocal", val: progress.M_vs_B },
+              { label: "资源", left: "Egoistic", right: "Altruistic", val: progress.C_vs_A },
+              { label: "决策", left: "Calculated", right: "Instinctive", val: progress.S_vs_F },
+              { label: "韧性", left: "Tenacious", right: "Resigned", val: progress.W_vs_L },
             ].map((axis) => (
               <span
                 key={axis.label}

@@ -8,7 +8,8 @@ import {
   RadarChart as RechartsRadar,
   ResponsiveContainer,
 } from "recharts";
-import type { DimensionTotals, RadarPoint } from "@/types/dbti";
+import { DIMENSION_RADAR_LABELS } from "@/types/dbti";
+import type { DimensionKey, DimensionTotals, RadarPoint } from "@/types/dbti";
 
 interface DBTIRadarChartProps {
   totals: DimensionTotals;
@@ -18,27 +19,27 @@ interface DBTIRadarChartProps {
 export function DBTIRadarChart({ totals, radarData }: DBTIRadarChartProps) {
   const max = Math.max(
     8,
-    totals.Mute,
-    totals.Bark,
-    totals["C-Dog"],
-    totals.Altruist,
-    totals.Smart,
-    totals.Fierce,
-    totals.Win,
-    totals["Lay-flat"]
+    totals.Silent,
+    totals.Vocal,
+    totals.Egoistic,
+    totals.Altruistic,
+    totals.Calculated,
+    totals.Instinctive,
+    totals.Tenacious,
+    totals.Resigned
   );
 
   const data = (radarData ?? [
-    { name: "Mute", value: totals.Mute },
-    { name: "Bark", value: totals.Bark },
-    { name: "C-Dog", value: totals["C-Dog"] },
-    { name: "Altruist", value: totals.Altruist },
-    { name: "Smart", value: totals.Smart },
-    { name: "Fierce", value: totals.Fierce },
-    { name: "Win", value: totals.Win },
-    { name: "Lay-flat", value: totals["Lay-flat"] },
+    { name: "Silent" as const, value: totals.Silent },
+    { name: "Vocal" as const, value: totals.Vocal },
+    { name: "Egoistic" as const, value: totals.Egoistic },
+    { name: "Altruistic" as const, value: totals.Altruistic },
+    { name: "Calculated" as const, value: totals.Calculated },
+    { name: "Instinctive" as const, value: totals.Instinctive },
+    { name: "Tenacious" as const, value: totals.Tenacious },
+    { name: "Resigned" as const, value: totals.Resigned },
   ]).map((point) => ({
-    subject: point.name,
+    subject: DIMENSION_RADAR_LABELS[point.name as DimensionKey],
     value: point.value,
     fullMark: max,
   }));
@@ -50,7 +51,7 @@ export function DBTIRadarChart({ totals, radarData }: DBTIRadarChartProps) {
           <PolarGrid stroke="#ffffff" strokeOpacity={0.08} />
           <PolarAngleAxis
             dataKey="subject"
-            tick={{ fill: "#a1a1aa", fontSize: 11 }}
+            tick={{ fill: "#a1a1aa", fontSize: 10 }}
           />
           <PolarRadiusAxis
             angle={30}

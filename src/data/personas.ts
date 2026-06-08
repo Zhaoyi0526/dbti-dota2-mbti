@@ -160,8 +160,8 @@ export function resolvePersona(
   totals: DimensionTotals
 ): ResolvedPersona {
   if (rawCode === "MASL") {
-    const altruism = totals.Altruist - totals["C-Dog"];
-    const layFlat = totals["Lay-flat"] - totals.Win;
+    const altruism = totals.Altruistic - totals.Egoistic;
+    const layFlat = totals.Resigned - totals.Tenacious;
     if (layFlat > altruism && progress.W_vs_L > 0) {
       return { key: "MASL_SLIPPERY", profile: personas.MASL_SLIPPERY };
     }
